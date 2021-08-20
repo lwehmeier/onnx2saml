@@ -1,0 +1,56 @@
+
+formula double global_model_input_Input3_0 := (global_model_input_Input3_0comp.state);
+formula double global_model_input_Input2_1 := (global_model_input_Input2_1comp.state);
+formula double global_model_input_Input_2 := (global_model_input_Input_2comp.state);
+formula double global_model_input_Input1_3 := (global_model_input_Input1_3comp.state);
+formula double super_Sum_outvar_0 := ((super_n_DLookupTable_outvar_0 + (super_n_DLookupTable_outvar_1 + super_n_DLookupTable_outvar_2)));
+formula double super_n_DLookupTable_outvar_0 := (super_n_DLookupTable_MANUAL_Lookup_n_D_comp.OUTPUT0);
+formula double super_n_DLookupTable_outvar_1 := (super_n_DLookupTable_MANUAL_Lookup_n_D_comp.OUTPUT1);
+formula double super_n_DLookupTable_outvar_2 := (super_n_DLookupTable_MANUAL_Lookup_n_D_comp.OUTPUT2);
+formula double super_n_DLookupTable_outvar_3 := (super_n_DLookupTable_MANUAL_Lookup_n_D_comp.OUTPUT3);
+formula double super_n_DLookupTable_outvar_4 := (super_n_DLookupTable_MANUAL_Lookup_n_D_comp.OUTPUT4);
+formula double super_Sum1_outvar_0 := ((super_n_DLookupTable_outvar_3 + super_n_DLookupTable_outvar_4));
+formula bool super_RelationalOperator_outvar_0 := (super_Sum_outvar_0 >= super_Sum1_outvar_0);
+formula bool assumption_formula := (true);
+formula bool assumption_g_formula := ((assumption_g_formulacomp.state = 1) & (assumption_formula));
+component global_model_input_Input3_0comp
+	state : [0.0..1.0] init 0.0 nondet;
+	true -> state' = 0.0;
+endcomponent
+component global_model_input_Input2_1comp
+	state : [0.0..1.0] init 0.0 nondet;
+	true -> state' = 0.0;
+endcomponent
+component global_model_input_Input_2comp
+	state : [0.0..1.0] init 0.0 nondet;
+	true -> state' = 0.0;
+endcomponent
+component global_model_input_Input1_3comp
+	state : [0.0..1.0] init 0.0 nondet;
+	true -> state' = 0.0;
+endcomponent
+component super_n_DLookupTable_MANUAL_Lookup_n_D_comp
+	formula int INPUT0 := (global_model_input_Input_2);
+	formula int INPUT1 := (global_model_input_Input_2);
+	formula int INPUT2 := (global_model_input_Input_2);
+	formula int INPUT3 := (global_model_input_Input1_3);
+	formula int INPUT4 := (global_model_input_Input1_3);
+	formula int INPUT5 := (global_model_input_Input1_3);
+	formula int INPUT6 := (global_model_input_Input2_1);
+	formula int INPUT7 := (global_model_input_Input2_1);
+	formula int INPUT8 := (global_model_input_Input2_1);
+	formula int INPUT9 := (global_model_input_Input3_0);
+	formula int INPUT10 := (global_model_input_Input3_0);
+
+	// YOUR ANN CODE HERE
+
+endcomponent
+component assumption_g_formulacomp
+	state : [0..1] init 1;
+	(state = 1) & (assumption_formula) -> state' = 1;
+	(state = 1) & (!assumption_formula) -> state' = 0;
+	state = 0 -> state' = 0;
+endcomponent
+
+
+SPEC AG !((assumption_g_formula) & (!(super_RelationalOperator_outvar_0 = true)));
