@@ -7,12 +7,38 @@ def createSaml_pre(inpts, inptmap):
     for i in range(len(inpts)):
         s+="formula double "+str(inpts[i])+" := " + str(inptmap[i]) +";\n"
     return s
+def createSaml_rnnStates(h_ins, h_outs):
+    s=""
+    for i in range(len(h_ins)):
+        for j in range(len(h_ins[i])):
+            # create and initialise states
+            s+=str(h_ins[i][j])+" : [ 0.0 .. 1.0 ] init 0.0"+";\n"
+            # create update rules
+    s += "true ->"
+    for i in range(len(h_ins)):
+        for j in range(len(h_ins[i])):
+            s+=" ("+str(h_ins[i][j])+"' = "+str(h_outs[i][j])+") &"
+    return s[:-2]+"\n;"
 def createSaml_post(outps, outptmap):
     assert len(outps) == len(outptmap)
     s = ""
     for i in range(len(outps)):
         s+="formula double "+str(outptmap[i])+" := " + str(outps[i]) +";\n"
     return s
+def rnnEqsToSaml(layereqs_x, layereqs_h, layerouts_x, layerouts_h, layerins_h, modelins, inputVarNames, outputvarNames, isInt=False):
+    saml = createSaml_pre(modelins, inputVarNames)
+    saml += createSaml_rnnStates(layerins_h, layerouts_h)
+    for i in range(len(layereqs_x)):
+        saml += "//begin layer "+str(i)+"\n"
+        saml += layerToSaml(layereqs_x[i],layerouts_x[i])
+        saml += layerToSaml(layereqs_h[i],layerouts_h[i])
+        saml += "//end layer "+str(i)+"\n"
+    saml += createSaml_post(layerouts_x[-1], outputvarNames)
+    if isInt: #slightly hacke, pass data type argument to string generation
+        # functions via class member in a future revision
+        saml.replace("formula double ", "formula int ")
+    return saml
+
 def annEqsToSaml(eqs, vars, inpts, inptmap, outptmap, isInt=False):
     saml = createSaml_pre(inpts, inptmap)
     for i in range(len(eqs)):

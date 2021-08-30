@@ -1,10 +1,16 @@
 import sympy2saml
 import onnx2sympy
+from onnx2sympy import ANNType
 import argparse
 
-def onnx2saml(onnxpath, inputVarNames, outputvarNames, quantize=False, quantData=None):
-    layereqs, layerouts, modelins = onnx2sympy.ann2Equations(onnxpath, quantize=quantize, quantData=quantData)
-    saml = sympy2saml.annEqsToSaml(layereqs, layerouts, modelins, inputVarNames, outputvarNames, isInt=quantize)
+def onnx2saml(onnxpath, inputVarNames, outputvarNames, quantize=False, quantData=None, annType=ANNType.FFDense):
+    saml = None
+    if annType==ANNType.FFDense:
+        layereqs, layerouts, modelins = onnx2sympy.ann2Equations(onnxpath, quantize=quantize, quantData=quantData, annType=annType)
+        saml = sympy2saml.annEqsToSaml(layereqs, layerouts, modelins, inputVarNames, outputvarNames, isInt=quantize)
+    elif annType==ANNType.RNNDense:
+        layereqs_x, layereqs_h, layerouts_x, layerouts_h, layerins_h, modelins = onnx2sympy.ann2Equations(onnxpath, quantize=quantize, quantData=quantData, annType=annType)
+        saml = sympy2saml.rnnEqsToSaml(layereqs_x, layereqs_h, layerouts_x, layerouts_h, layerins_h, modelins, inputVarNames, outputvarNames, isInt=quantize)
     return saml
 
 if __name__ == '__main__':
@@ -28,6 +34,8 @@ if __name__ == '__main__':
                         type=bool)
     parser.add_argument("-z", dest="quantData", required=False, help="File to data for static quantization",
                         metavar="FILE", type=str)
+    parser.add_argument("-t", dest="anntype", default='FFDense', help="Type of input ANN model. One of FFDense, RNNDense",
+                        metavar="FILE", type=str)
     args = parser.parse_args()
     #setup config
     if args.quantize is not None and args.quantData is None:
@@ -40,9 +48,14 @@ if __name__ == '__main__':
     inputVarNames=[(args.inprefix + str(i)) for i in range(11)]
     outputvarNames=[(args.outprefix + str(i)) for i in range(5)]
 
+    if args.anntype not in [str(e.name) for e in ANNType]:
+        print("Unsupported ann type")
+    for e in ANNType:
+        if e.name == args.anntype:
+            anntype = e
     #run conversion
 
-    saml = onnx2saml(onnxpath, inputVarNames, outputvarNames, quantize=quantize, quantData=args.quantData)
+    saml = onnx2saml(onnxpath, inputVarNames, outputvarNames, quantize=quantize, quantData=args.quantData, annType=anntype)
     print("PROCESSING OK")
 
     if args.outfile is None:
